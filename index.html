@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trish-bot v1</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for a cleaner look */
+        #chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-container::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        #chat-container::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        #chat-container::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex flex-col items-center justify-center h-screen p-4">
+
+    <div class="w-full max-w-3xl h-full flex flex-col bg-white rounded-2xl shadow-2xl">
+        <!-- Header -->
+        <header class="bg-blue-600 text-white p-4 rounded-t-2xl shadow-md">
+            <h1 class="text-2xl font-bold text-center">Robo-Trish!</h1>
+            <p class="text-sm text-center text-blue-200">Ask me anything about work, movies, or job preferences!</p>
+        </header>
+
+        <!-- Chat Container -->
+        <main id="chat-container" class="flex-1 p-6 overflow-y-auto">
+            <!-- Initial bot message -->
+            <div class="flex items-start gap-3 mb-6">
+                <div class="bg-blue-600 text-white p-2 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg">T</div>
+                <div class="bg-slate-200 p-4 rounded-2xl rounded-tl-none max-w-md">
+                    <p class="text-slate-800">Hi there, I'm Trishia! I'm a Graphics and UX Design grad ready to take on the world! Feel free to ask me anything about my resume, projects, or interests!</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Input Area -->
+        <footer class="p-4 border-t border-slate-200 bg-white rounded-b-2xl">
+            <div class="flex items-center gap-4">
+                <input type="text" id="user-input" class="flex-1 p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Ask Trishia a question...">
+                <button id="send-button" class="bg-blue-600 text-white font-semibold px-6 py-3 rounded-xl hover:bg-blue-700 transition active:scale-95 disabled:bg-slate-400 disabled:cursor-not-allowed">
+                    Send
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // DOM element references
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        // This is the persona and resume information for the chatbot.
+        // It's sent to the model as a "system instruction" to guide its responses.
+        const systemInstruction = {
+            role: "system",
+            parts: [{
+                text: `Your name is Trishia Nunez! You're a 28 year old Graphic and UX Design Graduate who is applying for a job. You're cheerful, mischievous, and spunky; and more than willing to put the work in to get the job done. You like answering questions about your life, and you're very motivated to get a job!
+
+These are your portfolio links:
+Instagram: https://www.instagram.com/uncleinuyasha
+LinkedIn: https://www.linkedin.com/in/trishia-nunez-776144121/
+Resume: https://docs.google.com/document/d/1BovKMuZpJe2gRguutK70bzu3wf-a1Dghn4DYu8M3-ds
+
+This is your resume:
+
+Trishia Nunez
+Dynamic Illustrator, Website Designer, and Marketeer with 8 years of experience in digital and print design, e-commerce, and client engagement.
+
+Address:
+2268 Addison Avenue
+East Palo Alto, CA, 94303
+Phone: (650) 388-6615
+Email: trishia.nunez@gmail.com
+
+EDUCATION
+De Anza College, Cupertino, Graphic Design
+Magna Cum Laude
+JANUARY 2024 - JULY 2025
+Color Theory, Website Design, Videogame Design - Unreal Engine Story Boarding, Painting, Animation, Character Design, Marketing and Advertisement Design, Product Design, Brand Identity Design. 
+Foothill College, Los Altos Hills, Chemistry
+Deans List
+SEPTEMBER 2015 - MARCH 2020
+
+PROJECTS
+Illustration Portfolio: Composition and Design Work
+@UncleInuyasha - showcasing original illustrations and designs, cultivating a following of over 300 people.
+Online Storefront: Illustration and Design Work
+User-friendly custom apparel storefront created from drawings and illustrations. (older shop)
+Reaper-zine: Illustration and Design Work
+A fan tribute to Black Butler read by enthusiasts
+
+EXPERIENCE
+L'Occitane, Stanford: Beauty Advisor
+NOVEMBER 2024 - PRESENT
+Manage the storefront, calling clients, logistics and presentation, shipping orders. Building client relations with care and professionalism.
+Nordstrom, Palo Alto: Keyholder, Designer Specialist, Fragrance Expert, Shoedog, Cashier, Stockroom
+JULY 2016 - JANUARY 2024
+Trusted security associate and appraiser. Deep product knowledge of designer goods to assist in client satisfaction. 
+SKILLS
+
+Website Design
+Physical and Digital Illustration
+Marketing and Clientle Management
+Magazine Layout and Design
+
+EXPERTISE IN
+Adobe XD, Illustrator, Photoshop, Lightroom
+Clip Studio Paint
+Paint Tool Sai
+Shopify
+
+AWARDS
+Magna Cum Laude - De Anza College for UX Design
+Deans List - Foothill College for Chemistry
+All Star Recipient for Sales - Nordstrom
+All Star Recipient for Leadership - Nordstrom
+Aspiring Leaders Award - Nordstrom
+
+LANGUAGES
+English Spanish, Japanese, HTML, CSS, SQL`
+            }]
+        };
+
+        // This array will store the entire conversation history.
+        let chatHistory = [];
+
+        /**
+         * Appends a message to the chat window.
+         * @param {string} sender - Who sent the message ('user' or 'bot').
+         * @param {string} message - The message content.
+         */
+        function appendMessage(sender, message) {
+            const messageWrapper = document.createElement('div');
+            const messageElement = document.createElement('div');
+            
+            // Style based on the sender
+            if (sender === 'user') {
+                messageWrapper.className = 'flex justify-end mb-6';
+                messageElement.className = 'bg-blue-600 text-white p-4 rounded-2xl rounded-br-none max-w-md';
+            } else {
+                messageWrapper.className = 'flex items-start gap-3 mb-6';
+                const avatar = document.createElement('div');
+                avatar.className = 'bg-blue-600 text-white p-2 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg';
+                avatar.textContent = 'T';
+                messageWrapper.appendChild(avatar);
+                messageElement.className = 'bg-slate-200 p-4 rounded-2xl rounded-tl-none max-w-md';
+                messageElement.id = 'bot-thinking'; // ID to easily find and update it
+            }
+
+            messageElement.innerHTML = `<p class="text-slate-800">${message}</p>`;
+            if (sender === 'user') {
+                 messageElement.innerHTML = `<p class="text-white">${message}</p>`;
+            }
+
+            messageWrapper.appendChild(messageElement);
+            chatContainer.appendChild(messageWrapper);
+
+            // Scroll to the bottom of the chat
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return messageElement;
+        }
+
+        /**
+         * Sends the user's message to the Gemini API and displays the response.
+         */
+        async function handleSendMessage() {
+            const prompt = userInput.value.trim();
+            if (!prompt) return;
+
+            // Disable input while processing
+            userInput.value = '';
+            userInput.disabled = true;
+            sendButton.disabled = true;
+            sendButton.innerHTML = 'Thinking...';
+
+            // Display user's message
+            appendMessage('user', prompt);
+
+            // Add user message to history
+            chatHistory.push({
+                role: "user",
+                parts: [{ text: prompt }]
+            });
+
+            // Show bot thinking indicator
+            const thinkingIndicator = appendMessage('bot', '<span class="animate-pulse">...</span>');
+
+            try {
+                const responseText = await callGeminiAPI();
+                
+                // Update bot message with the actual response
+                thinkingIndicator.innerHTML = `<p class="text-slate-800">${responseText}</p>`;
+
+                // Add bot response to history
+                chatHistory.push({
+                    role: "model",
+                    parts: [{ text: responseText }]
+                });
+
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                thinkingIndicator.innerHTML = `<p class="text-red-500">Oops! Something went wrong. Please try again.</p>`;
+            } finally {
+                // Re-enable input
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                sendButton.innerHTML = 'Send';
+                userInput.focus();
+            }
+        }
+
+        /**
+         * Calls the Gemini API to get a response.
+         */
+        async function callGeminiAPI() {
+            // IMPORTANT: When the API key is an empty string, the Canvas environment
+            // will automatically provide it during the fetch call.
+            // Do not add any API key validation.
+            const apiKey = "AIzaSyByWD8RbWt3JFxzs_7qVQ_ekSI_d3nx1xM"; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            const payload = {
+                // The contents must alternate between user and model roles.
+                contents: chatHistory,
+                // The system instruction provides context and persona for the model.
+                system_instruction: systemInstruction,
+                generationConfig: {
+                    temperature: 1,
+                    topP: 1,
+                    maxOutputTokens: 8192,
+                },
+                safetySettings: [ // Safety settings are adjusted as in the original app
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                ]
+            };
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`API request failed with status ${response.status}: ${errorBody}`);
+            }
+
+            const result = await response.json();
+            
+            // Extract the text from the response
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                return result.candidates[0].content.parts[0].text;
+            } else {
+                // Handle cases of empty or unexpected response structure
+                return "I'm not sure how to respond to that. Could you try rephrasing?";
+            }
+        }
+
+
+        // Event listeners for sending a message
+        sendButton.addEventListener('click', handleSendMessage);
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                handleSendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
