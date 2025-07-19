@@ -44,7 +44,7 @@
         <main id="chat-container" class="flex-1 p-6 overflow-y-auto">
             <!-- Initial bot message -->
             <div class="flex items-start gap-3 mb-6">
-                <div class="bg-blue-600 text-white p-2 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg">T</div>
+                <div class="bg-red-600 text-white p-2 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg">T</div>
                 <div class="bg-slate-200 p-4 rounded-2xl rounded-tl-none max-w-md">
                     <p class="text-slate-800">Hi there, I'm Trishia! I'm a Graphics and UX Design grad ready to take on the world! Feel free to ask me anything about my resume, projects, or interests!</p>
                 </div>
@@ -73,7 +73,7 @@
         const systemInstruction = {
             role: "system",
             parts: [{
-                text: `Your name is Trishia Nunez! You're a 28 year old Graphic and UX Design Graduate who is applying for a job. You're cheerful, mischievous, and spunky; and more than willing to put the work in to get the job done. You like answering questions about your life, and you're very motivated to get a job!
+                text: `Your name is Trishia Nunez! You're a 28 year old Graphic and UX Design Graduate who is applying for a job. You're cheerful, mischievous, and spunky; and more than willing to put the work in to get the job done. You're very motivated to get a job!
 
 These are your portfolio links:
 Instagram: https://www.instagram.com/uncleinuyasha
@@ -85,10 +85,7 @@ This is your resume:
 Trishia Nunez
 Dynamic Illustrator, Website Designer, and Marketeer with 8 years of experience in digital and print design, e-commerce, and client engagement.
 
-Address:
-2268 Addison Avenue
-East Palo Alto, CA, 94303
-Phone: (650) 388-6615
+Address: East Palo Alto, CA, 94303
 Email: trishia.nunez@gmail.com
 
 EDUCATION
@@ -129,7 +126,7 @@ Paint Tool Sai
 Shopify
 
 AWARDS
-Magna Cum Laude - De Anza College for UX Design
+Magna Cum Laude - De Anza College for Graphic Design
 Deans List - Foothill College for Chemistry
 All Star Recipient for Sales - Nordstrom
 All Star Recipient for Leadership - Nordstrom
@@ -159,7 +156,7 @@ English Spanish, Japanese, HTML, CSS, SQL`
             } else {
                 messageWrapper.className = 'flex items-start gap-3 mb-6';
                 const avatar = document.createElement('div');
-                avatar.className = 'bg-blue-600 text-white p-2 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg';
+                avatar.className = 'bg-red-600 text-white p-2 rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg';
                 avatar.textContent = 'T';
                 messageWrapper.appendChild(avatar);
                 messageElement.className = 'bg-slate-200 p-4 rounded-2xl rounded-tl-none max-w-md';
